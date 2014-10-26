@@ -47,14 +47,14 @@ Swagger has great integration with most server side technologies, most of which 
 {
     "swaggerVersion": "1.2",
     "apiVersion": "1.0",
-    "basePath": "http://webapi.cbi.local",
+    "basePath": "http://webapi.myApp.local",
     "resourcePath": "/User",
     "apis": [{
         "path": "/api/user",
         "operations": [{
             "method": "GET",
             "nickname": "User_GetCurrentUser",
-            "type": "ProfileDetailsDto",
+            "type": "UserDto",
             "parameters": [],
             "responseMessages": []
         }, {
@@ -62,7 +62,7 @@ Swagger has great integration with most server side technologies, most of which 
         "operations": [{
             "method": "GET",
             "nickname": "User_GetById",
-            "type": "ProfileDetailsDto",
+            "type": "UserDto",
             "parameters": [{
                 "paramType": "path",
                 "name": "userId",
@@ -74,7 +74,7 @@ Swagger has great integration with most server side technologies, most of which 
         }, {
             "method": "PUT",
             "nickname": "User_Put",
-            "type": "ProfileDetailsDto",
+            "type": "UserDto",
             "parameters": [{
                 "paramType": "path",
                 "name": "userId",
@@ -83,9 +83,9 @@ Swagger has great integration with most server side technologies, most of which 
                 "format": "int64"
             }, {
                 "paramType": "body",
-                "name": "profileDetails",
+                "name": "userDetails",
                 "required": true,
-                "type": "ProfileDetailsDto"
+                "type": "UserDto"
             }],
             "responseMessages": []
         }]
@@ -133,7 +133,7 @@ Swagger has great integration with most server side technologies, most of which 
                         
                         // Path parameter: `integer userId`
                         
-                        // Payload: `ProfileDetailsDto profileDetails`
+                        // Payload: `UserDto userDetails`
                         put: { 
                             url: '/api/user/:userId', 
                             method: 'PUT',
