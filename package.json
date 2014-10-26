@@ -31,12 +31,8 @@
         "resource",
         "$resource",
         "codegen",
-<<<<<<< HEAD
         "generation",
         "swagger"
-=======
-        "generation"
->>>>>>> 7565e39e3d886cd8f18eb159d98f5870885b4938
     ],
     "dependencies": {
         "through2": "^0.6.3",
