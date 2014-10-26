@@ -5,25 +5,34 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/liquidcowgithub/gulp-ng-scaffold"
     },
     "author": {
         "name": "Matthew van der Velden",
-        "email": "matthew.vdvelden@gmail.com",
-        "url": ""
+        "email": "matthew.vdvelden@gmail.com"
     },
     "engines": {
         "node": ">=0.10.0"
     },
-    "scripts": {
-        "test": ""
-    },
+    "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/gulpjs/gulp/master/LICENSE"
+    }
+  ],
     "files": [
-    "index.js"
-  ],
+        "index.js",
+        "templates/**/*"
+    ],
     "keywords": [
-    "scaffold"
-  ],
+        "scaffold",
+        "scaffolding",
+        "angular",
+        "resource",
+        "$resource",
+        "codegen",
+        "generation"
+    ],
     "dependencies": {
         "through2": "^0.6.3",
         "gulp": "^3.8.9",
@@ -36,22 +45,14 @@
 
     },
     "bugs": {
-        "url": ""
+        "url": "https://github.com/liquidcowgithub/gulp-ng-scaffold/issues"
     },
     "homepage": "",
-    "_id": "gulp-ng-scaffold@0.0.31",
-    "_shasum": "",
-    "maintainers": [
-        {
-            "name": "Matthew van der Velden",
-            "email": "matthew.vdvelden@gmail.com"
-    }
-  ],
-    "dist": {
-        "shasum": "",
-        "tarball": ""
-    },
+    "_id": "gulp-ng-scaffold@0.0.1",
+    "maintainers": [{
+        "name": "Matthew van der Velden",
+        "email": "matthew.vdvelden@gmail.com"
+    }],
     "directories": {},
-    "_resolved": "",
     "readme": "ERROR: No README data found!"
 }
