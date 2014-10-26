@@ -1,25 +1,18 @@
 gulp-ng-scaffold
 ================
 > Angular resource scaffolding from Swagger specifications
-
-
 ## About
+Uses [Swagger](http://swagger.io/) specification .json files to generate [Angular resources](https://docs.angularjs.org/api/ngResource/service/$resource). The resources have a one-to-one mapping of api controller names, methods and parameters to the scaffolded resources. 
 
-Uses [Swagger](http://swagger.io/) specification .json files to generate [Angular resources](https://docs.angularjs.org/api/ngResource/service/$resource).
+This plugin is intended as a CRUD operations kick starter for Angular apps. However it can also be incorporated as part of your build process, hence the gulp plugin. 
 
-This plugin is intended as a GRUD operations kick starter for Angular apps. However it can also be incorporated as part of your build process, hence the gulp plugin. 
-
-Uses Swagger specification .json files to generate Angular resources with $resource. The resources have a one-to-one mapping of api controller names, methods and parameters to the scaffolded resources. 
-
+## Extras
 Generated resources have basic Docco markup as well as basic scaffolded Jasmine unit tests. 
-
 ## Please note
 This scaffolding plugin is a work in progress. The configuration options, interfaces and generated code will change as the source code matures.
 Swagger specification 2.0 compatibility will be deferred until more testing on my side is done with version 1.2.
-
 ## Thanks
 Inspiration taken from [swagger-js-codegen](https://www.npmjs.org/package/swagger-js-codegen) and [grunt-swagger-js-codegen](https://www.npmjs.org/package/grunt-swagger-js-codegen)
-
 ## Installation 
 ```js
 npm install gulp-ng-scaffold --save-dev
@@ -99,7 +92,6 @@ Swagger has great integration with most server side technologies, most of which 
     }]
 }
 ```
-
 ## Sample resource output
 ```js
 (function() {
