@@ -1,0 +1,124 @@
+(function() {
+    'use strict';
+    describe('{{&controllerName}}', function () {
+        var mock{{&controllerName}}Resource;
+        var $httpBackend;
+        beforeEach(angular.mock.module('{{&appName}}'));
+
+        beforeEach(function () {
+            angular.mock.inject(function ($injector) {
+                $httpBackend = $injector.get('$httpBackend');
+                mock{{&controllerName}}Resource = $injector.get('{{&controllerName}}');
+            });
+        });
+        
+        {{#methods}}
+                        
+        /**
+         * @action {{&action}}
+         * @name {{&controllerName}}.{{&methodName}}
+        {{#parameters}}
+         * @{{#isPathParameter}}path{{/isPathParameter}}{{#isBodyParameter}}body{{/isBodyParameter}} param {{&type}} {{&format}} {{&name}} 
+        {{/parameters}}
+         */
+        describe('{{&methodName}}', function () {
+            var result;
+            
+            beforeEach(inject(function({{&controllerName}}) {
+                spyOn({{&controllerName}}, '{{&methodName}}').and.callThrough();
+                
+                {{#isGet}}
+                $httpBackend.expect{{&action}}('{{&testPath}}')
+                    .respond(
+                        {{#isArrayResponse}}
+                        [{
+                            data: 'test'
+                        }]
+                        {{/isArrayResponse}}
+                        {{^isArrayResponse}}
+                        {
+                            data: 'test'
+                        }
+                        {{/isArrayResponse}}
+                    );
+                {{/isGet}}
+                {{^isGet}}
+                $httpBackend.expect{{&action}}('{{&testPath}}').respond();
+                {{/isGet}}
+
+                {{#hasParameters}}
+                result = mock{{&controllerName}}Resource.{{&methodName}}(
+                {{#hasPathParameters}}
+                {
+                {{#parameters}}
+                {{#isPathParameter}}
+                    {{&name}}: {{#isStringParameter}}'{{/isStringParameter}}{{&testValue}}{{#isStringParameter}}'{{/isStringParameter}},
+                {{/isPathParameter}}
+                {{/parameters}}
+                }{{/hasPathParameters}}{{#hasBodyAndPathParameters}},{{/hasBodyAndPathParameters}}
+                {{#hasBodyParameters}}
+                {{#parameters}}
+                {{#isBodyParameter}}
+                    {{#isStringParameter}}'{{/isStringParameter}}{{&testValue}}{{#isStringParameter}}'{{/isStringParameter}}
+                {{/isBodyParameter}}
+                {{/parameters}}
+                {{/hasBodyParameters}}
+                );
+                {{/hasParameters}}
+                {{^hasParameters}}
+                result = mock{{&controllerName}}Resource.{{&methodName}}();
+                {{/hasParameters}}
+
+                $httpBackend.flush();
+            }));
+            
+            it('should be defined as a function', inject(function ({{&controllerName}}) {
+                expect(typeof {{&controllerName}}.{{&methodName}} === 'function').toEqual(true);
+            }));    
+            
+            it('should be called with the correct parameters', inject(function ({{&controllerName}}) {
+                {{#hasParameters}}
+                expect({{&controllerName}}.{{&methodName}}).toHaveBeenCalledWith(
+                {{#hasPathParameters}}
+                {
+                {{#parameters}}
+                {{#isPathParameter}}
+                    {{&name}}: {{#isStringParameter}}'{{/isStringParameter}}{{&testValue}}{{#isStringParameter}}'{{/isStringParameter}},
+                {{/isPathParameter}}
+                {{/parameters}}
+                }{{/hasPathParameters}}{{#hasBodyAndPathParameters}},{{/hasBodyAndPathParameters}}
+                {{#hasBodyParameters}}
+                {{#parameters}}
+                {{#isBodyParameter}}
+                    {{#isStringParameter}}'{{/isStringParameter}}{{&testValue}}{{#isStringParameter}}'{{/isStringParameter}}
+                {{/isBodyParameter}}
+                {{/parameters}}
+                {{/hasBodyParameters}}
+                );
+                {{/hasParameters}}
+                {{^hasParameters}}
+                expect({{&controllerName}}.{{&methodName}}).toHaveBeenCalledWith();
+                {{/hasParameters}}
+            }));
+            
+            {{#isGet}}
+            it('should respond with a promise containing data', inject(function () {
+                expect(typeof result.$promise === 'object').toEqual(true);
+                {{#isArrayResponse}}
+                expect(result[0].data).toEqual('test');
+                {{/isArrayResponse}}
+                {{^isArrayResponse}}
+                expect(result.data).toEqual('test');
+                {{/isArrayResponse}}
+            }));
+            {{/isGet}}
+            {{^isGet}}
+            it('should respond with a promise', inject(function () {
+                expect(typeof result.$promise === 'object').toEqual(true);
+            }));
+            {{/isGet}}
+        });
+        {{/methods}} 
+    });
+}());
+

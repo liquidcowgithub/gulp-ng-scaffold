@@ -1,0 +1,15 @@
+(function() {
+	'use strict';
+	angular.module('{{&appName}}')
+	.provider('{{&configName}}', function {{&configName}}Provider() {
+		this.config ={
+			serverBase: '{{&serverBase}}',
+			debug: {{&debug}}
+		};
+
+		this.$get = function (){
+			return this.config;
+		};
+	});
+
+}());

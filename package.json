@@ -1,0 +1,57 @@
+{
+    "name": "gulp-ng-scaffold",
+    "version": "0.0.1",
+    "description": "Scaffolds Angular resources from Swagger API specifications",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "author": {
+        "name": "Matthew van der Velden",
+        "email": "matthew.vdvelden@gmail.com",
+        "url": ""
+    },
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "scripts": {
+        "test": ""
+    },
+    "files": [
+    "index.js"
+  ],
+    "keywords": [
+    "scaffold"
+  ],
+    "dependencies": {
+        "through2": "^0.6.3",
+        "gulp": "^3.8.9",
+        "gulp-mustache": "^1.0.0",
+        "gulp-rename": "^1.2.0",
+        "gulp-ng-annotate": "^0.3.3",
+        "gulp-jsbeautifier": "^0.0.3"
+    },
+    "devDependencies": {
+
+    },
+    "bugs": {
+        "url": ""
+    },
+    "homepage": "",
+    "_id": "gulp-ng-scaffold@0.0.31",
+    "_shasum": "",
+    "maintainers": [
+        {
+            "name": "Matthew van der Velden",
+            "email": "matthew.vdvelden@gmail.com"
+    }
+  ],
+    "dist": {
+        "shasum": "",
+        "tarball": ""
+    },
+    "directories": {},
+    "_resolved": "",
+    "readme": "ERROR: No README data found!"
+}

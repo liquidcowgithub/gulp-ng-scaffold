@@ -1,0 +1,46 @@
+(function() {
+    'use strict';
+    angular.module('{{&appName}}')
+        .factory('{{&controllerName}}', function($resource, {{&appEnvironmentName}}) {
+
+                var serverUrl = {{&appEnvironmentName}}.serverName;
+                return $resource(serverUrl, null, {
+                    {{#methods}}
+                    
+                        // {{&controllerName}}.{{&methodName}}
+
+                        // The `{{&methodName}}` method performs a `{{&action}}` on `{{&path}}`
+                        
+                        {{#parameters}}
+                        {{#isPathParameter}}
+                        // Path parameter: `{{&type}} {{&name}}`
+                        
+                        {{/isPathParameter}}
+                        {{/parameters}}
+                        {{#parameters}}
+                        {{#isBodyParameter}}
+                        // Payload: `{{&type}} {{&name}}`
+                        {{/isBodyParameter}}
+                        {{/parameters}}
+                        {{&methodName}}: { 
+                            url: '{{&path}}', 
+                            method: '{{&action}}',
+                            {{#isGet}}
+                            isArray: {{&isArrayResponse}},
+                            {{/isGet}}
+                            {{#hasPathParameters}}
+                            params: {
+                                {{#parameters}}
+                                {{#isPathParameter}}
+                                {{&name}}: '@{{&name}}',
+                                {{/isPathParameter}}
+                                {{/parameters}}
+                            }
+                            {{/hasPathParameters}}
+                        },
+                    {{/methods}} 
+                });
+            }
+        );
+}());
+
