@@ -39,7 +39,7 @@
     };
 
     var checkIsArrayResponse = function (operation) {
-        if (operation.type === 'IHttpActionResult') {
+        if (operation.type === 'IHttpActionResult' || operation.type === 'array') {
             return true;
         }
         return false;
@@ -174,6 +174,9 @@
                     action: operation.method,
                     parameters: parameters,
                     isGet: operation.method === 'GET',
+                    isPut: operation.method === 'PUT',
+                    isPost: operation.method === 'POST',
+                    isDelete: operation.method === 'DELETE',
                     isArrayResponse: checkIsArrayResponse(operation),
                     hasBodyParameters: checkBodyParameters(parameters),
                     hasPathParameters: checkPathParameters(parameters),
@@ -193,8 +196,6 @@
         for (var index in controller.apis) {
             if (controller.apis.hasOwnProperty(index)) {
                 var api = controller.apis[index];
-
-
                 addMethods(methods, controllerName, api);
             }
         }

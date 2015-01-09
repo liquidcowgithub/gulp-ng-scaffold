@@ -1,6 +1,6 @@
 {
     "name": "gulp-ng-scaffold",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Scaffolds Angular resources from Swagger API specifications",
     "license": "MIT",
     "repository": {
@@ -57,7 +57,7 @@
         "url": "https://github.com/liquidcowgithub/gulp-ng-scaffold/issues"
     },
     "homepage": "",
-    "_id": "gulp-ng-scaffold@0.0.1",
+    "_id": "gulp-ng-scaffold@0.0.2",
     "maintainers": [{
         "name": "Matthew van der Velden",
         "email": "matthew.vdvelden@gmail.com"
