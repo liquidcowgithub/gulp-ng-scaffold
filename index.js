@@ -11,6 +11,7 @@
     var PluginError = gutil.PluginError;
     var File = require('vinyl');
     var fs = require('fs');
+    var extend = require('node.extend');
 
 
     // consts
@@ -331,9 +332,7 @@
         var isGet = false || requestModel.action === 'GET';
         var hasPathParameters = false;
         var hasBodyParameters = false;
-        var hasParameters = false;
         var isArrayResponse = requestModel.request.responses['200'].schema.type === 'array';
-        var hasBodyAndPathParameters = false;
         var url = JSON.parse(JSON.stringify(requestModel.url));
         var parameters = []
         for (var i = 0; i < requestModel.request.parameters.length; i++) {
@@ -367,12 +366,17 @@
                 parameter.testValue = '25892e17-80f6-415f-9c65-7395632f0223';
             }
             
+            if(parameter.type === undefined){
+                parameter.type = 'object';
+                parameter.testValue = '{}';
+            }
             url = url.replace('{' + requestModel.request.parameters[i].name + '}', ':' + parameter.name)
             parameters.push(parameter);
         }
 
-        hasBodyAndPathParameters = hasPathParameters && hasBodyParameters;
-        hasParameters = hasPathParameters || hasBodyParameters;
+        for (var j = 0; j < parameters.length; j++) {
+            parameters[j].hasBodyAndPathParameters = hasPathParameters && hasBodyParameters;
+        }
 
         return {
             action: requestModel.action,
@@ -381,11 +385,11 @@
             parameters: parameters,
             isGet: isGet,
             isArrayResponse: isArrayResponse,
-            hasParameters: hasParameters,
+            hasParameters: hasPathParameters || hasBodyParameters,
             hasPathParameters: hasPathParameters,
             hasBodyParameters: hasBodyParameters,
-            hasBodyAndPathParameters: hasBodyAndPathParameters,
-            testUrl: buildTestUrl(url,parameters)
+            hasBodyAndPathParameters: hasPathParameters && hasBodyParameters,
+            testUrl: buildTestUrl(url, parameters)
         }
     }
 
@@ -474,6 +478,8 @@
                 return;
             }
 
+            OPTIONS = extend(true, OPTIONS, options);
+
             vm.cb = function () {
                 if (vm.resourcesScaffolded && vm.testsScaffolded) {
                     cb();
@@ -481,7 +487,6 @@
             }
 
             readFile('node_modules/gulp-ng-scaffold/templates/angular-resource.mustache', function (templateError, template) {
-
                 if (templateError) {
                     console.log(templateError);
                 }
@@ -502,7 +507,6 @@
             });
 
             readFile('node_modules/gulp-ng-scaffold/templates/angular-resource-test.mustache', function (templateError, template) {
-
                 if (templateError) {
                     console.log(templateError);
                 }
@@ -524,7 +528,7 @@
         });
     }
 
-    module.exports = function (data, options) {
+    module.exports = function (options, data) {
         return scaffold(options, data, true);
     };
 
