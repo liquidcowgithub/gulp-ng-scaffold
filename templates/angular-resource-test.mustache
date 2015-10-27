@@ -28,7 +28,7 @@
                 spyOn({{&controllerName}}, '{{&methodName}}').and.callThrough();
                 
                 {{#isGet}}
-                $httpBackend.expect{{&action}}('{{&testPath}}')
+                $httpBackend.expect{{&action}}('{{&testUrl}}')
                     .respond(
                         {{#isArrayResponse}}
                         [{
@@ -43,7 +43,7 @@
                     );
                 {{/isGet}}
                 {{^isGet}}
-                $httpBackend.expect{{&action}}('{{&testPath}}').respond();
+                $httpBackend.expect{{&action}}('{{&testUrl}}').respond();
                 {{/isGet}}
 
                 {{#hasParameters}}
