@@ -114,26 +114,7 @@
         var testPath = url;
         for (var index in parameters) {
             if (parameters.hasOwnProperty(index)) {
-                var parameter = parameters[index];
-                if (parameter.type === 'integer' || parameter.type === 'long' || parameter.type === 'double' || parameter.type === 'float' || parameter.type === 'decimal') {
-                    testPath = testPath.replace('{' + parameter.name + '}', '1');
-                }
-
-                if (parameter.type === 'string') {
-                    testPath = testPath.replace('{' + parameter.name + '}', 'test');
-                }
-
-                if (parameter.type === 'char') {
-                    testPath = testPath.replace('{' + parameter.name + '}', 'a');
-                }
-
-                if (parameter.type === 'bool' || parameter.type === 'boolean') {
-                    testPath = testPath.replace('{' + parameter.name + '}', 'true');
-                }
-
-                if (parameter.type === 'Guid') {
-                    testPath = testPath.replace('{' + parameter.name + '}', '25892e17-80f6-415f-9c65-7395632f0223');
-                }
+                 testPath = testPath.replace(':' + parameters[index].name, parameters[index].testValue);
             }
         }
         return testPath;
@@ -377,7 +358,9 @@
         for (var j = 0; j < parameters.length; j++) {
             parameters[j].hasBodyAndPathParameters = hasPathParameters && hasBodyParameters;
         }
-
+        
+        console.log('testUrl: '+ buildTestUrl(url, parameters));
+        
         return {
             action: requestModel.action,
             methodName: getMethodNameFromRequest(requestModel.request),
@@ -454,6 +437,17 @@
 
         return resourceFiles;
     }
+    
+    function buildResourceConfig(model, template) {
+        var resourceContents = mustache.render(template, model);
+            var resourceConfigFile = new File({
+                cwd: "/",
+                base: OPTIONS.resourceOutput + '/',
+                path: OPTIONS.resourceOutput + '/resource.config.js',
+                contents: new Buffer(resourceContents)
+            });
+            return resourceConfigFile
+    }
 
     function readFile(filename, callback) {
         try {
@@ -481,7 +475,7 @@
             OPTIONS = extend(true, OPTIONS, options);
 
             vm.cb = function () {
-                if (vm.resourcesScaffolded && vm.testsScaffolded) {
+                if (vm.resourcesScaffolded && vm.testsScaffolded && vm.configScaffolded) {
                     cb();
                 }
             }
@@ -519,6 +513,24 @@
                         vm.push(resourceTestFiles[i]);
                     }
                     vm.testsScaffolded = true;
+                    vm.cb()
+
+                } catch (err) {
+                    vm.emit('error', new gutil.PluginError('gulp-ng-scaffold', err, { fileName: file.path }));
+                }
+            });
+            
+            readFile('node_modules/gulp-ng-scaffold/templates/resource.config.mustache', function (templateError, template) {
+                if (templateError) {
+                    console.log(templateError);
+                }
+
+                try {
+                    var resourceConfigFile = buildResourceConfig(OPTIONS, template);
+
+                    vm.push(resourceConfigFile);
+                    
+                    vm.configScaffolded = true;
                     vm.cb()
 
                 } catch (err) {
