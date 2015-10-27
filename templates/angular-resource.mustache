@@ -9,7 +9,7 @@
                     
                         // {{&controllerName}}.{{&methodName}}
 
-                        // The `{{&methodName}}` method performs a `{{&action}}` on `{{&path}}`
+                        // The `{{&methodName}}` method performs a `{{&action}}` on `{{&url}}`
                         
                         {{#parameters}}
                         {{#isPathParameter}}
@@ -23,11 +23,11 @@
                         {{/isBodyParameter}}
                         {{/parameters}}
                         {{&methodName}}: { 
-                            url: '{{&path}}', 
+                            url: '{{&url}}', 
                             method: '{{&action}}',
-                            {{#isGet}}
-                            isArray: {{&isArrayResponse}},
-                            {{/isGet}}
+                            {{#isArrayResponse}}
+                            isArray: true,
+                            {{/isArrayResponse}}
                             {{#hasPathParameters}}
                             params: {
                                 {{#parameters}}

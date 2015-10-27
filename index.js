@@ -5,10 +5,12 @@
     var through = require('through2');
     var gutil = require('gulp-util');
     var gulp = require('gulp');
-    var mustache = require('gulp-mustache');
+    var mustache = require('mustache');
     var rename = require('gulp-rename');
     var ngAnnotate = require('gulp-ng-annotate');
     var PluginError = gutil.PluginError;
+    var File = require('vinyl');
+    var fs = require('fs');
 
 
     // consts
@@ -16,17 +18,17 @@
 
     var OPTIONS = {
         debug: true,
-        
+
         appName: 'myApp',
 
         resourceOutput: '.build/resources',
-        
+
         testsOutput: '.build/tests',
-        
+
         serverBase: 'http://webapi.myApp.local/',
-        
+
         resourceConfigName: 'resourceConfig',
-        
+
         ngAnnotateOptions: {
             remove: true,
             add: true,
@@ -239,8 +241,8 @@
             .pipe(gulp.dest(OPTIONS.testsOutput))
             .on('error', gutil.log);
     };
-    
-    var scaffoldConfig = function(){
+
+    var scaffoldConfig = function () {
         gulp.src("node_modules/gulp-ng-scaffold/templates/resource.config.mustache")
             .pipe(mustache({
                 appName: OPTIONS.appName,
@@ -254,41 +256,252 @@
             .on('error', gutil.log);
     };
 
-    // plugin level function (dealing with files)
-    function ngScaffold(options) {
-        if (options) {
-            OPTIONS = options;
+    function getPaths(model) {
+        var paths = [];
+        var pathKeys = Object.keys(model.paths);
+
+        for (var i = 0; i < pathKeys.length; i++) {
+            var path = model.paths[pathKeys[i]];
+            path.url = pathKeys[i];
+            paths.push(path);
+        }
+        return paths;
+    }
+
+    function getTags(model) {
+        var tags = [];
+
+        var paths = getPaths(model);
+
+        for (var i = 0; i < paths.length; i++) {
+            var requestModels = getRequestModelsForPath(paths[i]);
+            for (var j = 0; j < requestModels.length; j++) {
+                var request = requestModels[j].request;
+                tags = tags.concat(request.tags);
+            }
         }
 
-        // creating a stream through which each file will pass
-        var stream = through.obj(function (file, enc, callback) {
-            if (file.isNull()) {
-                return callback();
-            }
-
-            if (file.isBuffer()) {
-                var model = JSON.parse(String(file.contents));
-                scaffoldResource(model);
-                scaffoldTest(model);
-                scaffoldConfig();
-            }
-
-            if (file.isStream()) {
-                var model = JSON.parse(String(file.contents));
-                scaffoldResource(model);
-                scaffoldTest(model);
-                scaffoldConfig();
-            }
-
-            this.push(file);
-
-            return callback();
+        tags = tags.filter(function onlyUnique(value, index, self) {
+            return self.indexOf(value) === index;
         });
 
-        // returning the file stream
-        return stream;
+        return tags;
+    }
+
+    function getRequestModelsForPath(path) {
+        var requestModels = [];
+        var requestKeys = Object.keys(path);
+        for (var i = 0; i < requestKeys.length; i++) {
+            if (requestKeys[i] !== 'url') {
+                var requestModel = {
+                    url: path.url,
+                    action: requestKeys[i].toUpperCase(),
+                    request: path[requestKeys[i]]
+                };
+                requestModels.push(requestModel);
+            }
+        }
+        return requestModels;
+    }
+
+    function getPathsForTag(model, tag) {
+        var paths = getPaths(model);
+        return paths.filter(function onlyForTag(value, index, self) {
+            var requestModels = getRequestModelsForPath(value);
+            for (var i = 0; i < requestModels.length; i++) {
+                for (var j = 0; j < requestModels[i].request.tags.length; j++) {
+                    if (requestModels[i].request.tags[j] === tag) {
+                        return true
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    var firstLetterToLowerCase = function (str) {
+        return str.substr(0, 1).toLowerCase() + str.substr(1);
     };
 
-    // exporting the plugin main function
-    module.exports = ngScaffold;
+    function getMethodNameFromRequest(request) {
+        return firstLetterToLowerCase(request.operationId.split('_')[1]);
+    }
+
+    function buildMethodFromRequest(requestModel) {
+        var hasPathParameters = false;
+        var isArrayResponse = requestModel.request.responses['200'].schema.type === 'array';
+        var url = JSON.parse(JSON.stringify(requestModel.url));
+        var parameters = []
+        for (var i = 0; i < requestModel.request.parameters.length; i++) {
+            hasPathParameters = hasPathParameters || requestModel.request.parameters[i].in === 'path';
+            var parameter = {
+                type: requestModel.request.parameters[i].type,
+                name: firstLetterToLowerCase(requestModel.request.parameters[i].name),
+                isPathParameter: requestModel.request.parameters[i].in === 'path',
+                isBodyParameter: requestModel.request.parameters[i].in === 'body'
+            };
+            url = url.replace('{' + requestModel.request.parameters[i].name + '}', ':' + parameter.name)
+            parameters.push(parameter);
+        }
+
+        return {
+            action: requestModel.action,
+            methodName: getMethodNameFromRequest(requestModel.request),
+            url: url,
+            parameters: parameters,
+            isArrayResponse: isArrayResponse,
+            hasPathParameters: hasPathParameters
+        }
+    }
+
+    function buildResourceModelFromPaths(paths, tag) {
+
+        var methods = [];
+        for (var i = 0; i < paths.length; i++) {
+            var requestModels = getRequestModelsForPath(paths[i]);
+            for (var j = 0; j < requestModels.length; j++) {
+                methods.push(buildMethodFromRequest(requestModels[j]))
+            }
+        }
+
+        var resourceModel = {
+            appName: OPTIONS.appName,
+            controllerName: tag,
+            appEnvironmentName: OPTIONS.resourceConfigName,
+            methods: methods
+        }
+
+        return resourceModel;
+    }
+
+
+
+
+    function buildResourceForTag(model, tag, template) {
+        var paths = getPathsForTag(model, tag);
+        var resourceModel = buildResourceModelFromPaths(paths, tag);
+        return mustache.render(template, resourceModel);
+    }
+
+    function buildResources(model, template) {
+        var resourceFiles = [];
+        var tags = getTags(model);
+
+        for (var i = 0; i < tags.length; i++) {
+            var resourceContents = buildResourceForTag(model, tags[i], template);
+            var resourceFile = new File({
+                cwd: "/",
+                base: OPTIONS.resourceOutput + '/',
+                path: OPTIONS.resourceOutput + '/' + tags[i] + '.js',
+                contents: new Buffer(resourceContents)
+            });
+            resourceFiles.push(resourceFile);
+        }
+
+        return resourceFiles;
+    }
+    
+    
+    
+    // function transform(file, enc, callback) {
+    //     if (file.isNull()) {
+    //         return callback(null, file);
+    //     }
+    //     if (options) {
+    //         OPTIONS = options;
+    //     }
+
+    //     if (file.isBuffer() || file.isStream()) {
+    //         var model = JSON.parse(String(file.contents));
+    //         var resourceFiles = buildResources(model);
+
+    //         for (var i = 0; i < resourceFiles.length; i++) {
+    //             console.log(resourceFiles[i])
+    //             this.push(resourceFiles[i]);
+    //         }
+    //         //scaffoldResource(model);
+    //         //scaffoldTest(model);
+    //         //scaffoldConfig();
+    //     }
+
+    //     // creating a stream through which each file will pass
+    //     var stream = through.obj(function (file, enc, callback) {
+    //         if (file.isNull()) {
+    //             return callback();
+    //         }
+
+    //         if (file.isBuffer() || file.isStream()) {
+    //             var model = JSON.parse(String(file.contents));
+    //             var resourceFiles = buildResources(model);
+
+    //             for (var i = 0; i < resourceFiles.length; i++) {
+    //                 console.log(resourceFiles[i])
+    //                 this.push(resourceFiles[i]);
+    //             }
+    //             //scaffoldResource(model);
+    //             //scaffoldTest(model);
+    //             //scaffoldConfig();
+    //         }
+
+
+
+    //         return callback();
+    //     });
+    // }
+    
+    
+    
+    //     var fs = require('fs');
+
+
+    function readFile(filename, callback) {
+        try {
+            fs.readFile(filename, 'utf8', callback);
+        } catch (e) {
+            callback(e);
+        }
+    }
+
+
+    function scaffold(options, data, render) {
+        return through.obj(function (file, enc, cb) {
+            var vm = this;
+            readFile('node_modules/gulp-ng-scaffold/templates/angular-resource.mustache', function (templateError, template) {
+                
+                if (file.isNull()) {
+                    cb(null, file);
+                    return;
+                }
+
+                if (file.isStream()) {
+                    cb(new gutil.PluginError('gulp-ng-scaffold', 'Streaming not supported'));
+                    return;
+                }
+
+                if(templateError){
+                  console.log(templateError) ; 
+                }
+                
+                try {
+                    var model = JSON.parse(file.contents.toString());
+                    var resourceFiles = buildResources(model, template);
+
+                    for (var i = 0; i < resourceFiles.length; i++) {
+                        vm.push(resourceFiles[i]);
+                    }
+
+                } catch (err) {
+                    vm.emit('error', new gutil.PluginError('gulp-ng-scaffold', err, { fileName: file.path }));
+                }
+
+                cb();
+            });
+        });
+    }
+
+    module.exports = function (data, options) {
+        return scaffold(options, data, true);
+    };
+
+
 })();
