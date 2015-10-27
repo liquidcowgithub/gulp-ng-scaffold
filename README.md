@@ -1,16 +1,14 @@
 gulp-ng-scaffold
 ================
-> Angular resource scaffolding from Swagger specifications
+Angular resource scaffolding from Swagger specifications
 ## About
-Uses [Swagger](http://swagger.io/) specification .json files to generate [Angular resources](https://docs.angularjs.org/api/ngResource/service/$resource). The resources have a one-to-one mapping of api controller names, methods and parameters to the scaffolded resources. 
+Uses [Swagger 2.0](http://swagger.io/) specification .json files to generate [Angular resources](https://docs.angularjs.org/api/ngResource/service/$resource). The resources have a one-to-one mapping of api controller names, methods and parameters to the scaffolded resources. 
 
 This plugin is intended as a CRUD operations kick starter for Angular apps. However it can also be incorporated as part of your build process, hence the gulp plugin. 
 
+For older Swagger 1.2 specifications, use version 0.0.2 of gulp-ng-scaffold.
 ## Extras
-Generated resources have basic Docco markup as well as basic scaffolded Jasmine unit tests. 
-## Please note
-This scaffolding plugin is a work in progress. The configuration options, interfaces and generated code will change as the source code matures.
-Swagger specification 2.0 compatibility will be deferred until more testing on my side is done with version 1.2.
+Generated resources have basic Docco markup as well as basic set of scaffolded Jasmine unit tests. 
 ## Thanks
 Inspiration taken from [swagger-js-codegen](https://www.npmjs.org/package/swagger-js-codegen) and [grunt-swagger-js-codegen](https://www.npmjs.org/package/grunt-swagger-js-codegen)
 ## Installation 
@@ -18,80 +16,53 @@ Inspiration taken from [swagger-js-codegen](https://www.npmjs.org/package/swagge
 npm install gulp-ng-scaffold --save-dev
 ```
 ## Usage 
+To scaffold off an API definition saved as a .json file:
 ```js
 var scaffold = require('gulp-ng-scaffold');
+var gulp = require('gulp');
+var gutil = require('gulp-util');
 
 gulp.task('scaffold', function () {
     var opts = {
-        debug: true,
+        debug: false,
         appName: 'myApp',
-        resourceOutput: 'build/resources',
-        testsOutput: 'build/tests',
-        serverBase: 'http://webapi.myApp.local/',
-        resourceConfigName: 'resourceConfig',
-        ngAnnotateOptions: {
-            remove: true,
-            add: true,
-            single_quotes: true
-        }
+        resourceOutput: './generated/resources',
+        testsOutput: './generated/resources/tests',
+        serverBase: 'http://myapp.internet.com',
+        resourceConfigName: 'resourceConfig'
     };
-    
-    return gulp.src('src/resourceModels/*.json')
+
+    return gulp.src('./api/*.json')
         .pipe(scaffold(opts))
+        .pipe(gulp.dest('./generated/resources'))
         .on('error', gutil.log);
+});
+```
+To fetch, parse and save an API definition as a .json file:
+```js
+var gulp = require('gulp');
+var fs = require('fs');
+var SwaggerParser = require('swagger-parser');
+
+gulp.task('fetch', function (callback) {
+    SwaggerParser.validate('http://petstore.swagger.io/v2/swagger.json')
+        .then(function (api) {
+            fs.mkdir('./api/', function (error) {
+                if (error) {
+                    //sadness
+                }
+                var name = './api/' + api.info.title.replace('/', '') + '.json';
+                fs.writeFileSync(name, JSON.stringify(api), 'utf-8');
+                callback();
+            });
+        })
+        .catch(function (err) {
+            console.error(err);
+        });
 });
 ```
 ## Sample Swagger specification 
 Swagger has great integration with most server side technologies, most of which can give you an export of existing api specifications in a .json format. 
-```json
-{
-    "swaggerVersion": "1.2",
-    "apiVersion": "1.0",
-    "basePath": "http://webapi.myApp.local",
-    "resourcePath": "/User",
-    "apis": [{
-        "path": "/api/user",
-        "operations": [{
-            "method": "GET",
-            "nickname": "User_GetCurrentUser",
-            "type": "UserDto",
-            "parameters": [],
-            "responseMessages": []
-        }, {
-        "path": "/api/user/{userId}",
-        "operations": [{
-            "method": "GET",
-            "nickname": "User_GetById",
-            "type": "UserDto",
-            "parameters": [{
-                "paramType": "path",
-                "name": "userId",
-                "required": true,
-                "type": "integer",
-                "format": "int64"
-            }],
-            "responseMessages": []
-        }, {
-            "method": "PUT",
-            "nickname": "User_Put",
-            "type": "UserDto",
-            "parameters": [{
-                "paramType": "path",
-                "name": "userId",
-                "required": true,
-                "type": "integer",
-                "format": "int64"
-            }, {
-                "paramType": "body",
-                "name": "userDetails",
-                "required": true,
-                "type": "UserDto"
-            }],
-            "responseMessages": []
-        }]
-    }]
-}
-```
 ## Sample resource output
 ```js
 (function() {
