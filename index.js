@@ -32,7 +32,7 @@
         var testPath = url;
         for (var index in parameters) {
             if (parameters.hasOwnProperty(index)) {
-                 testPath = testPath.replace(':' + parameters[index].name, parameters[index].testValue);
+                testPath = testPath.replace(':' + parameters[index].name, parameters[index].testValue);
             }
         }
         return testPath;
@@ -116,49 +116,51 @@
         var isArrayResponse = requestModel.request.responses['200'].schema.type === 'array';
         var url = JSON.parse(JSON.stringify(requestModel.url));
         var parameters = []
-        for (var i = 0; i < requestModel.request.parameters.length; i++) {
-            hasPathParameters = hasPathParameters || requestModel.request.parameters[i].in === 'path';
-            hasBodyParameters = hasBodyParameters || requestModel.request.parameters[i].in === 'body';
-            var parameter = {
-                type: requestModel.request.parameters[i].type,
-                name: firstLetterToLowerCase(requestModel.request.parameters[i].name),
-                isPathParameter: requestModel.request.parameters[i].in === 'path',
-                isBodyParameter: requestModel.request.parameters[i].in === 'body',
-                isStringParameter: requestModel.request.parameters[i].type === 'string'
-            };
+        if (requestModel.request.parameters){
+            for (var i = 0; i < requestModel.request.parameters.length; i++) {
+                hasPathParameters = hasPathParameters || requestModel.request.parameters[i].in === 'path';
+                hasBodyParameters = hasBodyParameters || requestModel.request.parameters[i].in === 'body';
+                var parameter = {
+                    type: requestModel.request.parameters[i].type,
+                    name: firstLetterToLowerCase(requestModel.request.parameters[i].name),
+                    isPathParameter: requestModel.request.parameters[i].in === 'path',
+                    isBodyParameter: requestModel.request.parameters[i].in === 'body',
+                    isStringParameter: requestModel.request.parameters[i].type === 'string'
+                };
 
-            if (parameter.type === 'integer' || parameter.type === 'long' || parameter.type === 'double' || parameter.type === 'float' || parameter.type === 'decimal') {
-                parameter.testValue = 1;
-            }
+                if (parameter.type === 'integer' || parameter.type === 'long' || parameter.type === 'double' || parameter.type === 'float' || parameter.type === 'decimal') {
+                    parameter.testValue = 1;
+                }
 
-            if (parameter.type === 'string') {
-                parameter.testValue = 'test';
-            }
+                if (parameter.type === 'string') {
+                    parameter.testValue = 'test';
+                }
 
-            if (parameter.type === 'char') {
-                parameter.testValue = 'a';
-            }
+                if (parameter.type === 'char') {
+                    parameter.testValue = 'a';
+                }
 
-            if (parameter.type === 'bool' || parameter.type === 'boolean') {
-                parameter.testValue = true;
-            }
+                if (parameter.type === 'bool' || parameter.type === 'boolean') {
+                    parameter.testValue = true;
+                }
 
-            if (parameter.type === 'Guid') {
-                parameter.testValue = '25892e17-80f6-415f-9c65-7395632f0223';
+                if (parameter.type === 'Guid') {
+                    parameter.testValue = '25892e17-80f6-415f-9c65-7395632f0223';
+                }
+
+                if (parameter.type === undefined) {
+                    parameter.type = 'object';
+                    parameter.testValue = '{}';
+                }
+                url = url.replace('{' + requestModel.request.parameters[i].name + '}', ':' + parameter.name)
+                parameters.push(parameter);
             }
-            
-            if(parameter.type === undefined){
-                parameter.type = 'object';
-                parameter.testValue = '{}';
-            }
-            url = url.replace('{' + requestModel.request.parameters[i].name + '}', ':' + parameter.name)
-            parameters.push(parameter);
         }
 
         for (var j = 0; j < parameters.length; j++) {
             parameters[j].hasBodyAndPathParameters = hasPathParameters && hasBodyParameters;
         }
-        
+
         return {
             action: requestModel.action,
             methodName: getMethodNameFromRequest(requestModel.request),
@@ -235,16 +237,16 @@
 
         return resourceFiles;
     }
-    
+
     function buildResourceConfig(model, template) {
         var resourceContents = mustache.render(template, model);
-            var resourceConfigFile = new File({
-                cwd: "/",
-                base: OPTIONS.resourceOutput + '/',
-                path: OPTIONS.resourceOutput + '/resource.config.js',
-                contents: new Buffer(resourceContents)
-            });
-            return resourceConfigFile
+        var resourceConfigFile = new File({
+            cwd: "/",
+            base: OPTIONS.resourceOutput + '/',
+            path: OPTIONS.resourceOutput + '/resource.config.js',
+            contents: new Buffer(resourceContents)
+        });
+        return resourceConfigFile
     }
 
     function readFile(filename, callback) {
@@ -316,7 +318,7 @@
                     vm.emit('error', new gutil.PluginError('gulp-ng-scaffold', err, { fileName: file.path }));
                 }
             });
-            
+
             readFile('node_modules/gulp-ng-scaffold/templates/resource.config.mustache', function (templateError, template) {
                 if (templateError) {
                     console.log(templateError);
@@ -326,7 +328,7 @@
                     var resourceConfigFile = buildResourceConfig(OPTIONS, template);
 
                     vm.push(resourceConfigFile);
-                    
+
                     vm.configScaffolded = true;
                     vm.cb()
 
