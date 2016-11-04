@@ -251,7 +251,6 @@
 
     function readFile(filename, callback) {
         try {
-            console.log(filename)
             fs.readFile(filename, 'utf8', callback);
         } catch (e) {
             callback(e);
