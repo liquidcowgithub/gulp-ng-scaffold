@@ -116,7 +116,7 @@
         var isArrayResponse = requestModel.request.responses['200'].schema.type === 'array';
         var url = JSON.parse(JSON.stringify(requestModel.url));
         var parameters = []
-        if (requestModel.request.parameters){
+        if (requestModel.request.parameters) {
             for (var i = 0; i < requestModel.request.parameters.length; i++) {
                 hasPathParameters = hasPathParameters || requestModel.request.parameters[i].in === 'path';
                 hasBodyParameters = hasBodyParameters || requestModel.request.parameters[i].in === 'body';
@@ -251,6 +251,7 @@
 
     function readFile(filename, callback) {
         try {
+            console.log(filename)
             fs.readFile(filename, 'utf8', callback);
         } catch (e) {
             callback(e);
@@ -260,6 +261,13 @@
     function scaffold(options, data, render) {
         return through.obj(function (file, enc, cb) {
             var vm = this;
+
+             vm.templatePaths = {
+                angularResource: __dirname + '\\templates\\angular-resource.mustache',
+                angularResourceTest: __dirname + '\\templates\\angular-resource-test.mustache',
+                resourceConfig: __dirname + '\\templates\\resource.config.mustache'
+            }
+
 
             if (file.isNull()) {
                 cb(null, file);
@@ -279,7 +287,7 @@
                 }
             }
 
-            readFile('node_modules/gulp-ng-scaffold/templates/angular-resource.mustache', function (templateError, template) {
+            readFile(vm.templatePaths.angularResource, function (templateError, template) {
                 if (templateError) {
                     console.log(templateError);
                 }
@@ -299,7 +307,7 @@
                 }
             });
 
-            readFile('node_modules/gulp-ng-scaffold/templates/angular-resource-test.mustache', function (templateError, template) {
+            readFile(vm.templatePaths.angularResourceTest, function (templateError, template) {
                 if (templateError) {
                     console.log(templateError);
                 }
@@ -319,7 +327,7 @@
                 }
             });
 
-            readFile('node_modules/gulp-ng-scaffold/templates/resource.config.mustache', function (templateError, template) {
+            readFile(vm.templatePaths.resourceConfig, function (templateError, template) {
                 if (templateError) {
                     console.log(templateError);
                 }
