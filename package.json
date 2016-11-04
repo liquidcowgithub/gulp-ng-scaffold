@@ -1,6 +1,6 @@
 {
   "name": "gulp-ng-scaffold",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Scaffolds Angular resources from Swagger API specifications",
   "license": "MIT",
   "repository": {
